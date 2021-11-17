@@ -12,31 +12,20 @@ import java.lang.Math;
 
 
 public class Window extends JFrame{
-
-	public static void main(String[] args) {
-        javax.swing.SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                new Window();
-            }
-        });
-    }
+	JPanel convPanel = new JPanel(); 
+	JButton firstButton;
+	JTextField amountInput, firstInput, secondInput;
+	static StringBuffer response;
+	
 	
 	//Setting up the overall window
 	public Window() {
 		super("Currency Exchange");
-		
-		JPanel convPanel = new JPanel();    
-	    JPanel graphPanel = new JPanel();   
-	    JPanel infoPanel = new JPanel();
-	    JTabbedPane tabPane = new JTabbedPane();  
-	    tabPane.setBounds(0, 0, 750, 280);  
-	    tabPane.add("Convert", convPanel);  
-	    tabPane.add("Graph", graphPanel);
-	    tabPane.add("Info", infoPanel); 
+		JTabbedPane tabPane = CurrencyTabs();
 	    add(tabPane);  
 
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setSize(750, 350);
+		setSize(650, 350);
 		Image icon = Toolkit.getDefaultToolkit().getImage("CCash.jpg");
 		Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
 		Dimension frameSize = getSize();
@@ -44,8 +33,8 @@ public class Window extends JFrame{
         
         setResizable(false);
 		setIconImage(icon);
-		convPanel.add(Buttons());
 		convPanel.add(TextSetup(), BorderLayout.NORTH);
+		convPanel.add(Buttons(), BorderLayout.SOUTH);
 		setVisible(true);
 	}
 	
@@ -53,9 +42,61 @@ public class Window extends JFrame{
 	public JPanel Buttons() {
 		JPanel buttonPanel = new JPanel();
 		buttonPanel.setBackground(Color.green);
-		JButton firstButton = new JButton("Convert");
-		buttonPanel.add(firstButton, BorderLayout.SOUTH);
+		firstButton = new JButton("Convert");
+		firstButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				int validity = ValidTest();
+				try {
+					switch (validity) {
+						case 0:
+							JOptionPane.showMessageDialog(buttonPanel, "Please Provide Input");
+							break;
+						case 1:
+							JOptionPane.showMessageDialog(buttonPanel, "Please Provide Valid Amount");
+							break;
+						case 2:
+							JOptionPane.showMessageDialog(buttonPanel, "Invalid Currency\nPlease refer to Info tab", "Currency Error", JOptionPane.ERROR_MESSAGE);
+						default:
+							System.out.print("EVERYTHING IS FINE");
+							String test = GetCurrency(firstInput.getText(), secondInput.getText());
+							double rate = Double.parseDouble(test.substring(test.lastIndexOf(" "), test.length() - 1));
+							double convertedNum = Double.parseDouble(amountInput.getText()) * rate;
+							JOptionPane.showMessageDialog(buttonPanel, convertedNum);
+							//GetCurrency(firstInput.getText(), secondInput.getText());
+					}		
+				}
+				catch (Exception ex) {
+					System.out.print("BUTTON ERROR");
+				}
+			}
+		});
+		buttonPanel.add(firstButton);
 		return buttonPanel;
+	}
+	
+	//Check if users input is valid
+	public int ValidTest() {
+		if (amountInput.getText().isEmpty() || firstInput.getText().isEmpty() || secondInput.getText().isEmpty()) {
+			return 0;
+		}
+		
+		if (!(amountInput.getText().isEmpty())) {
+			try {
+				Integer.parseInt(amountInput.getText());
+			}
+			catch (Exception ex) {
+				return 1;
+				
+			}
+		}
+		
+		if ( "x" == "x") {
+			return 3;
+		}
+		
+		else {
+			return 2;
+		}
 	}
 	
 	//Setup for various texts present in the window
@@ -63,9 +104,9 @@ public class Window extends JFrame{
 		JPanel textPanel = new JPanel();
 		//textPanel.setBackground(Color.BLACK);
 		textPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
-		JTextField amountInput = new JTextField(10);
-		JTextField firstInput = new JTextField(10);
-		JTextField secondInput = new JTextField(10);
+		amountInput = new JTextField(5);
+		firstInput = new JTextField(5);
+		secondInput = new JTextField(5);
 		
 		
 		
@@ -91,37 +132,43 @@ public class Window extends JFrame{
 		
 		textPanel.add(new JLabel("  Enter Second Currency:"));
 		textPanel.add(secondInput);
-		secondInput.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				try {
-					if (amountInput.getText().isEmpty() || firstInput.getText().isEmpty() || secondInput.getText().isEmpty()) {
-						JOptionPane.showMessageDialog(textPanel, "Please Provide Input");
-					}
-					else {
-						String test = GetCurrency(firstInput.getText(), secondInput.getText());
-						double rate = Double.parseDouble(test.substring(test.lastIndexOf(" "), test.length() - 1));
-						System.out.print(rate);
-						double convertedNum = Double.parseDouble(amountInput.getText()) * rate;
-						JOptionPane.showMessageDialog(textPanel, Math.round(convertedNum));
-					}
-				}
-				catch(Exception ex) {
-					System.out.print("IN INPUT EXCEPTION");
-				}
-			}
-		});
+//		secondInput.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				try {
+//					if (amountInput.getText().isEmpty() || firstInput.getText().isEmpty() || secondInput.getText().isEmpty()) {
+//						JOptionPane.showMessageDialog(textPanel, "Please Provide Input");
+//					}
+//					else {
+//						String test = GetCurrency(firstInput.getText(), secondInput.getText());
+//						double rate = Double.parseDouble(test.substring(test.lastIndexOf(" "), test.length() - 1));
+//						System.out.print(rate);
+//						double convertedNum = Double.parseDouble(amountInput.getText()) * rate;
+//						JOptionPane.showMessageDialog(textPanel, convertedNum);
+//					}
+//				}
+//				catch(Exception ex) {
+//					System.out.print("IN INPUT EXCEPTION");
+//				}
+//			}
+//		});
 
 		return textPanel;
 		
 	}
 	
-	public JTabbedPane CurrencyTabs() {
-		JTabbedPane tab = new JTabbedPane();
+	//Setup tabs
+	public JTabbedPane CurrencyTabs() {   
+	    JPanel graphPanel = new JPanel();   
+	    JPanel infoPanel = new JPanel();
+	    JTabbedPane tabPane = new JTabbedPane();  
+	    tabPane.add("Convert", convPanel);  
+	    tabPane.add("Graph", graphPanel);
+	    tabPane.add("Info", infoPanel); 
 		
-		return tab;
+		return tabPane;
 	}
 	
-	//Uses a URL GET request to acquire a JSON format of given conversion rates
+	//Uses a URL GET request to acquire a JSON format of conversion rates
 	public static String GetCurrency(String firstA, String secondA) throws IOException {
 		String output = null;
 		JPanel popUp = new JPanel();
@@ -132,12 +179,10 @@ public class Window extends JFrame{
 	    HttpURLConnection conection = (HttpURLConnection) newUrl.openConnection();
 	    conection.setRequestMethod("GET");
 	    int responseCode = conection.getResponseCode();
-
-
 	    if (responseCode == HttpURLConnection.HTTP_OK) {
 	        BufferedReader in = new BufferedReader(
 	            new InputStreamReader(conection.getInputStream()));
-	        StringBuffer response = new StringBuffer();
+	        response = new StringBuffer();
 	        while ((readLine = in.readLine()) != null) {
 	            response.append(readLine);
 	        }
@@ -146,11 +191,19 @@ public class Window extends JFrame{
 	        output = response.toString();   
 	    } 
 	    else {
-	        JOptionPane.showMessageDialog(popUp, "Please Try Again");
+	        JOptionPane.showMessageDialog(popUp, "Invalid Currency\nPlease refer to Info tab", "Currency Error", JOptionPane.ERROR_MESSAGE);
 	    }
 	    
 	    return output;
 	}
+	
+	public static void main(String[] args) {
+        javax.swing.SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                new Window();
+            }
+        });
+    }
 	
 	
 
